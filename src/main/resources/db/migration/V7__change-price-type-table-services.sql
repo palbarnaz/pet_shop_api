@@ -1,0 +1,1 @@
+alter table services alter column price type numeric(10,2);
