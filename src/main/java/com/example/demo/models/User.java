@@ -26,9 +26,18 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Profile profile;
+
+    @Column(name = "token_login")
+    private String tokenLogin;
+
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private List<Animal> animals;
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_client")
+    private List<Schedule> schedules;
+
 
     public User(CreateUser user) {
         this.name = user.name();
@@ -36,6 +45,18 @@ public class User {
         this.phone = user.phone();
         this.password = user.password();
         this.profile = user.profile();
-        animals = new ArrayList<>();
+        if (profile == Profile.CLIENT) animals = new ArrayList<>();
+        if (profile == Profile.CLIENT) schedules = new ArrayList<>();
+
     }
+
+    public String generateToken() {
+        tokenLogin = UUID.randomUUID().toString();
+        return tokenLogin;
+    }
+
+    public boolean isAuthenticated(String token) {
+        return tokenLogin != null && tokenLogin.equals(token);
+    }
+
 }

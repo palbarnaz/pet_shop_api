@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -21,22 +22,31 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<List<User>> list(){
+    public ResponseEntity<List<User>> list() {
         var users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{number}")
+    public ResponseEntity getUser(@PathVariable UUID number, @RequestHeader("AuthToken") String token) {
+        var user = userRepository.getReferenceById(number);
+
+        if (!user.isAuthenticated(token)) {
+            return ResponseEntity.badRequest().body("Token Inválido");
+        }
+
+        return ResponseEntity.ok().body(new ResponseUser(user));
+    }
+
     @PostMapping
     @Transactional
-    public ResponseEntity createClient(@RequestBody @Valid CreateUser newUser){
+    public ResponseEntity createClient(@RequestBody @Valid CreateUser newUser) {
 
-        if(newUser.profile().equals(Profile.ADMIN)){
+        if (newUser.profile().equals(Profile.ADMIN)) {
             return ResponseEntity.badRequest().body("Somente administradores podem criar esse perfil!");
         }
 
-
-
-        if(userRepository.existsByEmail(newUser.email())){
+        if (userRepository.existsByEmail(newUser.email())) {
             return ResponseEntity.badRequest().body("E-mail já cadastrado!");
         }
 
