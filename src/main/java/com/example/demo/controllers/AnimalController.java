@@ -3,6 +3,7 @@ package com.example.demo.controllers;
 import com.example.demo.dtos.CreateAnimal;
 import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseAnimal;
+import com.example.demo.enums.Profile;
 import com.example.demo.models.Animal;
 import com.example.demo.repositories.AnimalRepository;
 import com.example.demo.repositories.UserRepository;
@@ -31,17 +32,21 @@ public class AnimalController {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
 
+        if (user.get().getProfile() == Profile.ADMIN)
+            return ResponseEntity.badRequest().body(new ErrorData("animal", "Administrador não pode cadastrar animal!"));
+
 
         if (!user.get().isAuthenticated(token)) {
             return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
         }
 
         if (animalRepository.findByName(newAnimal.name()).isPresent()) {
-            return ResponseEntity.badRequest().body("Já existe um pet com esse nome!");
+            return ResponseEntity.badRequest().body(new ErrorData("animal", "Já existe um pet com esse nome!"));
         }
 
 
         var animal = new Animal(newAnimal, user.get().getId());
+
 
         animalRepository.save(animal);
 

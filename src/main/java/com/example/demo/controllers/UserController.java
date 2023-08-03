@@ -1,8 +1,8 @@
 package com.example.demo.controllers;
 
 import com.example.demo.dtos.CreateUser;
+import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseUser;
-import com.example.demo.enums.Profile;
 import com.example.demo.models.User;
 import com.example.demo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +24,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> list() {
         var users = userRepository.findAll();
-        return ResponseEntity.ok(users);
+        return ResponseEntity.ok().body(users);
     }
 
     @GetMapping("/{number}")
@@ -32,7 +32,7 @@ public class UserController {
         var user = userRepository.getReferenceById(number);
 
         if (!user.isAuthenticated(token)) {
-            return ResponseEntity.badRequest().body("Token Inválido");
+            return ResponseEntity.badRequest().body(new ErrorData("token", "Token Inválido"));
         }
 
         return ResponseEntity.ok().body(new ResponseUser(user));
@@ -42,12 +42,12 @@ public class UserController {
     @Transactional
     public ResponseEntity createClient(@RequestBody @Valid CreateUser newUser) {
 
-        if (newUser.profile().equals(Profile.ADMIN)) {
-            return ResponseEntity.badRequest().body("Somente administradores podem criar esse perfil!");
-        }
+//        if (newUser.profile().equals(Profile.ADMIN)) {
+//            return ResponseEntity.badRequest().body("Somente administradores podem criar esse perfil!");
+//        }
 
         if (userRepository.existsByEmail(newUser.email())) {
-            return ResponseEntity.badRequest().body("E-mail já cadastrado!");
+            return ResponseEntity.badRequest().body(new ErrorData("user", "E-mail já cadastrado!"));
         }
 
 

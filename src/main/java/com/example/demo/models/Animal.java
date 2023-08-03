@@ -29,4 +29,6 @@ public class Animal {
         this.specie = newAnimal.specie();
         this.userId = userId;
     }
+
+
 }

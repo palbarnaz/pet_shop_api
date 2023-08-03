@@ -4,6 +4,7 @@ import com.example.demo.dtos.CreateService;
 import com.example.demo.dtos.EditService;
 import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseService;
+import com.example.demo.enums.Profile;
 import com.example.demo.models.Service;
 import com.example.demo.repositories.ServiceRepository;
 import com.example.demo.repositories.UserRepository;
@@ -39,12 +40,16 @@ public class ServiceController {
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
+
+        if (user.get().getProfile() == Profile.CLIENT)
+            return ResponseEntity.badRequest().body(new ErrorData("serviço", "Cliente não pode cadastrar serviço!"));
+
         if (!user.get().isAuthenticated(token)) {
             return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
         }
 
         if (serviceRepository.findByDescription(newService.description()).isPresent()) {
-            return ResponseEntity.badRequest().body("Este serviço já foi criado! ");
+            return ResponseEntity.badRequest().body(new ErrorData("service", "Este serviço já foi criado! "));
         }
 
         var service = new Service(newService, idUser);
@@ -68,7 +73,8 @@ public class ServiceController {
 
         var service = serviceRepository.findById(idService);
 
-        if (service.isEmpty()) return ResponseEntity.badRequest().body("Serviço não encontrado!");
+        if (service.isEmpty())
+            return ResponseEntity.badRequest().body(new ErrorData("service", "Serviço não encontrado!"));
 
         var editService = service.get();
 
@@ -92,7 +98,7 @@ public class ServiceController {
         }
 
         if (!serviceRepository.existsById(idService))
-            return ResponseEntity.badRequest().body("Serviço não encontrado!");
+            return ResponseEntity.badRequest().body(new ErrorData("service", "Serviço não encontrado!"));
 
 
         serviceRepository.deleteById(idService);

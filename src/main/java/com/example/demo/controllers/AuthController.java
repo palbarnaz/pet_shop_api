@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.RequestLogin;
 import com.example.demo.dtos.ResponseLogin;
 import com.example.demo.repositories.UserRepository;
@@ -26,13 +27,13 @@ public class AuthController {
             var user = userRepository.getReferenceByEmail(login.email());
 
             if (!user.getPassword().equals(login.password())) {
-                return ResponseEntity.badRequest().body("Credenciais inválidas.");
+                return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
             }
             var token = user.generateToken();
             userRepository.save(user);
             return ResponseEntity.ok().body(new ResponseLogin(token, user.getProfile()));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.badRequest().body("Credenciais inválidas.");
+            return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
         }
 
 
