@@ -1,17 +1,14 @@
 package com.example.demo.models;
 
-import com.example.demo.dtos.CreateSchedule;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
-@Setter
 @Entity
 @Table(name = "schedules")
 @AllArgsConstructor
@@ -22,20 +19,30 @@ public class Schedule {
     private UUID id;
     @Column(name = "date_hour")
     private LocalDateTime dateHour;
-    @Column(name = "id_client")
-    private UUID idClient;
-    @Column(name = "id_animal")
-    private UUID idAnimal;
-    @Column(name = "id_service")
-    private UUID idService;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_client")
+    private User user;
 
 
-    public Schedule(CreateSchedule newSchedule) {
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_animal")
 
-        dateHour = newSchedule.dateHour();
-        idClient = newSchedule.idClient();
-        idAnimal = newSchedule.idAnimal();
-        idService = newSchedule.idService();
+    private Animal animal;
+
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_service")
+
+    private Service service;
+
+
+    public Schedule(LocalDateTime dateHour, Animal animal, User user, Service service) {
+
+        this.dateHour = dateHour;
+        this.user = user;
+        this.animal = animal;
+        this.service = service;
 
 
     }

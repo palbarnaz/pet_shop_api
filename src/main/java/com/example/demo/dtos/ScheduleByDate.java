@@ -4,18 +4,10 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
-public record CreateSchedule(
+public record ScheduleByDate(
         @NotNull
         @FutureOrPresent
-        LocalDateTime dateHour,
-        @NotNull
-        UUID idUser,
-        @NotNull
-        UUID idAnimal,
-        @NotNull
-        UUID idService
-
+        LocalDateTime dateHour
 ) {
 }
