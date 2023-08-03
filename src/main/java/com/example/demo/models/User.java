@@ -30,13 +30,11 @@ public class User {
     @Column(name = "token_login")
     private String tokenLogin;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private List<Animal> animals;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_client")
-    private List<Schedule> schedules;
+
 
 
     public User(CreateUser user) {
@@ -45,11 +43,8 @@ public class User {
         this.phone = user.phone();
         this.password = user.password();
         this.profile = user.profile();
-        if (profile == Profile.CLIENT) animals = new ArrayList<>();
-        if (profile == Profile.CLIENT) schedules = new ArrayList<>();
-
+        this.animals = new ArrayList<>();
     }
-
     public String generateToken() {
         tokenLogin = UUID.randomUUID().toString();
         return tokenLogin;
