@@ -2,17 +2,16 @@ package com.example.demo.controllers;
 
 import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.RequestLogin;
-import com.example.demo.dtos.ResponseLogin;
+import com.example.demo.dtos.ResponseUser;
 import com.example.demo.repositories.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
+
+@CrossOrigin(origins = "*")
 
 @RestController
 @RequestMapping("/auth")
@@ -31,7 +30,7 @@ public class AuthController {
             }
             var token = user.generateToken();
             userRepository.save(user);
-            return ResponseEntity.ok().body(new ResponseLogin(token, user.getProfile()));
+            return ResponseEntity.ok().body(new ResponseUser(user));
         } catch (NoSuchElementException e) {
             return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
         }

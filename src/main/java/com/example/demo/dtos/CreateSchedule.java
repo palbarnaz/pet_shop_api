@@ -11,8 +11,6 @@ public record CreateSchedule(
         @FutureOrPresent
         LocalDateTime dateHour,
         @NotNull
-        UUID idUser,
-        @NotNull
         UUID idAnimal,
         @NotNull
         UUID idService

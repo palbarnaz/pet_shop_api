@@ -14,12 +14,14 @@ public record ResponseUser(
         String phone,
         Profile profile,
 
+        String tokenLogin,
+
         List<Animal> animal
 
 
 ) {
 
     public ResponseUser(User user) {
-        this(user.getId(), user.getName(), user.getEmail(), user.getPhone(), user.getProfile(), user.getAnimals());
+        this(user.getId(), user.getName(), user.getEmail(), user.getPhone(), user.getProfile(), user.getTokenLogin(), user.getAnimals());
     }
 }

@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static java.time.DayOfWeek.SUNDAY;
+@CrossOrigin(origins = "*")
 
 @RestController
 @RequestMapping("/schedules")
