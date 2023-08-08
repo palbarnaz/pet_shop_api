@@ -60,9 +60,8 @@ public class ScheduleController {
     public ResponseEntity filterDate(@RequestParam LocalDateTime date) {
         var schedules = scheduleRepository.findByDate(date.toLocalDate().toString());
 
-        var schedulesDate = schedules.stream().filter(s -> s.getDateHour().getDayOfMonth() == date.getDayOfMonth());
+        return ResponseEntity.ok().body(schedules.stream().map(s -> new ScheduleByDate(s.getDateHour())));
 
-        return ResponseEntity.ok().body(schedulesDate.map(s -> new ScheduleByDate(s.getDateHour())));
     }
 
 
