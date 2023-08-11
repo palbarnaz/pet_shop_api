@@ -5,15 +5,15 @@ import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseAnimal;
 import com.example.demo.enums.Profile;
 import com.example.demo.models.Animal;
+import com.example.demo.models.User;
 import com.example.demo.repositories.AnimalRepository;
 import com.example.demo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 @CrossOrigin(origins = "*")
 
 @RestController
@@ -25,10 +25,11 @@ public class AnimalController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping("/{idUser}")
+    @PostMapping()
     @Transactional
-    public ResponseEntity createAnimal(@RequestBody @Valid CreateAnimal newAnimal, @PathVariable UUID idUser, @RequestHeader("AuthToken") String token) {
-        var user = userRepository.findById(idUser);
+    public ResponseEntity createAnimal(@AuthenticationPrincipal User userLogged, @RequestBody @Valid CreateAnimal newAnimal) {
+
+        var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
@@ -37,9 +38,7 @@ public class AnimalController {
             return ResponseEntity.badRequest().body(new ErrorData("animal", "Administrador não pode cadastrar animal!"));
 
 
-        if (!user.get().isAuthenticated(token)) {
-            return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
-        }
+
 
         if (animalRepository.findByName(newAnimal.name()).isPresent()) {
             return ResponseEntity.badRequest().body(new ErrorData("animal", "Já existe um pet com esse nome!"));

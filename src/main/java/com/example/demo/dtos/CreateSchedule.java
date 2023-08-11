@@ -12,6 +12,8 @@ public record CreateSchedule(
         LocalDateTime dateHour,
         @NotNull
         UUID idAnimal,
+
+
         @NotNull
         UUID idService
 

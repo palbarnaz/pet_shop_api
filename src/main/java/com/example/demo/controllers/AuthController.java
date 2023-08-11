@@ -1,40 +1,63 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.RequestLogin;
-import com.example.demo.dtos.ResponseUser;
+import com.example.demo.dtos.ResponseClient;
+import com.example.demo.dtos.ResponseLogin;
+import com.example.demo.models.User;
 import com.example.demo.repositories.UserRepository;
+import com.example.demo.services.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.NoSuchElementException;
 
 @CrossOrigin(origins = "*")
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/login")
 public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AuthenticationManager manager;
+
+    @Autowired
+    private TokenService tokenService;
+
+
     @PostMapping
-    public ResponseEntity login(@RequestBody @Valid RequestLogin login) {
-        try {
+    public ResponseEntity doLogin(@RequestBody @Valid RequestLogin data) {
+        var token = new UsernamePasswordAuthenticationToken(data.email(), data.password());
+        var authentication = manager.authenticate(token);
+        var jwt = tokenService.getToken((User) authentication.getPrincipal());
 
-            var user = userRepository.getReferenceByEmail(login.email());
+        var user = userRepository.getReferenceByEmail(data.email());
 
-            if (!user.getPassword().equals(login.password())) {
-                return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
-            }
-            var token = user.generateToken();
-            userRepository.save(user);
-            return ResponseEntity.ok().body(new ResponseUser(user));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
-        }
-
-
+        return ResponseEntity.ok().body(new ResponseLogin(jwt, new ResponseClient(user)));
     }
+//    @PostMapping
+//    public ResponseEntity login(@RequestBody @Valid RequestLogin login) {
+//
+//
+//
+//
+//        try {
+//
+//            var user = userRepository.getReferenceByEmail(login.email());
+//
+//            if (!user.getPassword().equals(login.password())) {
+//                return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
+//            }
+//            var token = user.generateToken();
+//            userRepository.save(user);
+//            return ResponseEntity.ok().body(new ResponseUser(user));
+//        } catch (NoSuchElementException e) {
+//            return ResponseEntity.badRequest().body(new ErrorData("login", "Credenciais inválidas."));
+//        }
+//
+//
+//    }
 }

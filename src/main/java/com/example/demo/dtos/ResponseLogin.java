@@ -1,6 +1,4 @@
 package com.example.demo.dtos;
 
-import com.example.demo.enums.Profile;
-
-public record ResponseLogin(String tokenLogin, Enum<Profile> profile) {
+public record ResponseLogin(String tokenJwt, ResponseClient user) {
 }

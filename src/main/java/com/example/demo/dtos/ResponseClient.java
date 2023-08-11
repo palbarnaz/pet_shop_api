@@ -7,21 +7,21 @@ import com.example.demo.models.User;
 import java.util.List;
 import java.util.UUID;
 
-public record ResponseUser(
+public record ResponseClient(
         UUID id,
         String name,
         String email,
         String phone,
         Profile profile,
 
-        String tokenLogin,
-
         List<Animal> animal
 
 
 ) {
 
-    public ResponseUser(User user) {
-        this(user.getId(), user.getName(), user.getEmail(), user.getPhone(), user.getProfile(), user.getTokenLogin(), user.getAnimals());
+    public ResponseClient(User user) {
+        this(user.getId(), user.getName(), user.getEmail(), user.getPhone(), user.getProfile(), user.getAnimals());
     }
+
+
 }

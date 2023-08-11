@@ -6,12 +6,14 @@ import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseService;
 import com.example.demo.enums.Profile;
 import com.example.demo.models.Service;
+import com.example.demo.models.User;
 import com.example.demo.repositories.ServiceRepository;
 import com.example.demo.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -34,11 +36,11 @@ public class ServiceController {
         return ResponseEntity.ok().body(services);
     }
 
-    @PostMapping("/{idUser}")
+    @PostMapping()
     @Transactional
-    public ResponseEntity createService(@RequestBody @Valid CreateService newService, @RequestHeader("AuthToken") String token, @PathVariable UUID idUser) {
+    public ResponseEntity createService(@AuthenticationPrincipal User userLogged, @RequestBody @Valid CreateService newService) {
 
-        var user = userRepository.findById(idUser);
+        var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
@@ -46,32 +48,30 @@ public class ServiceController {
         if (user.get().getProfile() == Profile.CLIENT)
             return ResponseEntity.badRequest().body(new ErrorData("serviço", "Cliente não pode cadastrar serviço!"));
 
-        if (!user.get().isAuthenticated(token)) {
-            return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
-        }
+
 
         if (serviceRepository.findByDescription(newService.description()).isPresent()) {
             return ResponseEntity.badRequest().body(new ErrorData("service", "Este serviço já foi criado! "));
         }
 
-        var service = new Service(newService, idUser);
+        var service = new Service(newService, userLogged.getId());
 
         serviceRepository.save(service);
 
         return ResponseEntity.ok(new ResponseService(service.getDescription(), service.getDuration(), service.getPrice()));
     }
 
-    @PutMapping("/{idService}/{idUser}")
+    @PutMapping("/{idService}")
     @Transactional
-    public ResponseEntity editService(@RequestBody @Valid EditService newService, @PathVariable UUID idService, @PathVariable UUID idUser, @RequestHeader("AuthToken") String token) {
-        var user = userRepository.findById(idUser);
+    public ResponseEntity editService(@AuthenticationPrincipal User userLogged, @RequestBody @Valid EditService newService, @PathVariable UUID idService) {
+        var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
 
-        if (!user.get().isAuthenticated(token)) {
-            return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
-        }
+        if (user.get().getProfile() == Profile.CLIENT)
+            return ResponseEntity.badRequest().body(new ErrorData("serviço", "Cliente não pode editar serviço!"));
+
 
         var service = serviceRepository.findById(idService);
 
@@ -80,24 +80,24 @@ public class ServiceController {
 
         var editService = service.get();
 
-        editService.update(newService, idUser);
+        editService.update(newService, userLogged.getId());
 
 
         return ResponseEntity.ok().body(new ResponseService(editService.getDescription(), editService.getDuration(), editService.getPrice()));
     }
 
-    @DeleteMapping("/{idService}/{idUser}")
+    @DeleteMapping("/{idService}")
     @Transactional
-    public ResponseEntity deleteService(@Valid @PathVariable UUID idService, @RequestHeader("AuthToken") String token, @PathVariable UUID idUser) {
+    public ResponseEntity deleteService(@Valid @PathVariable UUID idService, @AuthenticationPrincipal User userLogged) {
 
-        var user = userRepository.findById(idUser);
+        var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
         }
 
-        if (!user.get().isAuthenticated(token)) {
-            return ResponseEntity.badRequest().body(new ErrorData("token", "token inválido"));
-        }
+        if (user.get().getProfile() == Profile.CLIENT)
+            return ResponseEntity.badRequest().body(new ErrorData("serviço", "Cliente não pode deletar serviço!"));
+
 
         if (!serviceRepository.existsById(idService))
             return ResponseEntity.badRequest().body(new ErrorData("service", "Serviço não encontrado!"));

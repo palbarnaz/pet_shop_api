@@ -1,22 +1,25 @@
 package com.example.demo.models;
 
-import com.example.demo.dtos.CreateUser;
 import com.example.demo.enums.Profile;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name="users")
+@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -27,31 +30,59 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Profile profile;
 
-    @Column(name = "token_login")
-    private String tokenLogin;
-
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private List<Animal> animals;
 
-
-
-
-    public User(CreateUser user) {
-        this.name = user.name();
-        this.email = user.email();
-        this.phone = user.phone();
-        this.password = user.password();
-        this.profile = user.profile();
-        this.animals = new ArrayList<>();
-    }
-    public String generateToken() {
-        tokenLogin = UUID.randomUUID().toString();
-        return tokenLogin;
+    public User(String name, String email, String phone, String password, Profile profile) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.password = password;
+        this.profile = profile;
+        animals = new ArrayList<>();
     }
 
-    public boolean isAuthenticated(String token) {
-        return tokenLogin != null && tokenLogin.equals(token);
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
+
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+
+//    public String generateToken() {
+//        tokenLogin = UUID.randomUUID().toString();
+//        return tokenLogin;
+//    }
+//
+//    public boolean isAuthenticated(String token) {
+//        return tokenLogin != null && tokenLogin.equals(token);
+//    }
 
 }
