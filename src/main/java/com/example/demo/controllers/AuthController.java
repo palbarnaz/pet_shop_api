@@ -1,8 +1,7 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.RequestLogin;
-import com.example.demo.dtos.ResponseClient;
-import com.example.demo.dtos.ResponseLogin;
+import com.example.demo.dtos.*;
+import com.example.demo.enums.Profile;
 import com.example.demo.models.User;
 import com.example.demo.repositories.UserRepository;
 import com.example.demo.services.TokenService;
@@ -36,7 +35,11 @@ public class AuthController {
 
         var user = userRepository.getReferenceByEmail(data.email());
 
-        return ResponseEntity.ok().body(new ResponseLogin(jwt, new ResponseClient(user)));
+        if (((User) authentication.getPrincipal()).getProfile().equals(Profile.ADMIN))
+            return ResponseEntity.ok().body(new ResponseLoginAdmin(jwt, new ResponseAdmin(user)));
+
+
+        return ResponseEntity.ok().body(new ResponseLoginClient(jwt, new ResponseClient(user)));
     }
 
 }
