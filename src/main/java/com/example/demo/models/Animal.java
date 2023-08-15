@@ -22,7 +22,6 @@ public class Animal {
     @Column(name = "user_id")
     private UUID userId;
 
-
     public Animal(CreateAnimal newAnimal, UUID userId) {
 
         this.name = newAnimal.name();

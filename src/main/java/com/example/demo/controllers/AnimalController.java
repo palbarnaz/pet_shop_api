@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
+import com.example.demo.config.HandleException;
 import com.example.demo.dtos.CreateAnimal;
-import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseAnimal;
 import com.example.demo.enums.Profile;
 import com.example.demo.models.Animal;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 @CrossOrigin(origins = "*")
 
 @RestController
@@ -31,27 +32,23 @@ public class AnimalController {
 
         var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "id inválido"));
         }
 
         if (user.get().getProfile() == Profile.ADMIN)
-            return ResponseEntity.badRequest().body(new ErrorData("animal", "Administrador não pode cadastrar animal!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("animal", "Administrador não pode cadastrar animal!"));
 
+        var existAnimal = user.get().getAnimals().stream().filter(a -> a.getName().equalsIgnoreCase(newAnimal.name())).toList();
 
-
-
-        if (animalRepository.findByName(newAnimal.name()).isPresent()) {
-            return ResponseEntity.badRequest().body(new ErrorData("animal", "Já existe um pet com esse nome!"));
+        if (existAnimal.size() > 0) {
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("animal", "Já existe um pet com esse nome!"));
         }
 
-
         var animal = new Animal(newAnimal, user.get().getId());
-
 
         animalRepository.save(animal);
 
         return ResponseEntity.ok(new ResponseAnimal(animal.getId(), animal.getName(), animal.getSpecie(), animal.getUserId()));
-
 
     }
 }

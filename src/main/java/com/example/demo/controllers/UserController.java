@@ -1,7 +1,7 @@
 package com.example.demo.controllers;
 
+import com.example.demo.config.HandleException;
 import com.example.demo.dtos.CreateUser;
-import com.example.demo.dtos.ErrorData;
 import com.example.demo.dtos.ResponseAdmin;
 import com.example.demo.dtos.ResponseClient;
 import com.example.demo.enums.Profile;
@@ -39,7 +39,7 @@ public class UserController {
         var user = userRepository.findById(userLogged.getId());
 
         if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "Usuário não encontrado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "Usuário não encontrado!"));
         }
 
         var outputUser = new ResponseClient(user.get());
@@ -50,12 +50,8 @@ public class UserController {
     @Transactional
     public ResponseEntity createClient(@RequestBody @Valid CreateUser newUser) {
 
-        if (newUser.profile().equals(Profile.ADMIN)) {
-            return ResponseEntity.badRequest().body("Somente administradores podem criar esse perfil!");
-        }
-
         if (userRepository.existsByEmail(newUser.email())) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "E-mail já cadastrado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail já cadastrado!"));
         }
 
 
@@ -64,7 +60,7 @@ public class UserController {
                 newUser.email(),
                 newUser.phone(),
                 passwordEncoder.encode(newUser.password()),
-                newUser.profile()
+                Profile.CLIENT
         );
 
         userRepository.save(user);
@@ -76,14 +72,14 @@ public class UserController {
 
     @PostMapping("/admin")
     @Transactional
-    public ResponseEntity createAdmin(@RequestBody @Valid CreateUser newUser) {
+    public ResponseEntity createAdmin(@AuthenticationPrincipal User userLogged, @RequestBody @Valid CreateUser newUser) {
 
-        if (newUser.profile().equals(Profile.CLIENT)) {
-            return ResponseEntity.badRequest().body("Somente administradores podem criar esse perfil!");
-        }
+        if (userLogged.getProfile() == Profile.CLIENT)
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "Somente administradores podem cadastrar outros administradores!"));
+
 
         if (userRepository.existsByEmail(newUser.email())) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "E-mail já cadastrado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail já cadastrado!"));
         }
 
 
@@ -92,7 +88,7 @@ public class UserController {
                 newUser.email(),
                 newUser.phone(),
                 passwordEncoder.encode(newUser.password()),
-                newUser.profile()
+                Profile.ADMIN
         );
 
         userRepository.save(user);

@@ -1,6 +1,10 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.*;
+import com.example.demo.config.HandleException;
+import com.example.demo.dtos.CreateSchedule;
+import com.example.demo.dtos.ListSchedules;
+import com.example.demo.dtos.ListSchedulesUser;
+import com.example.demo.dtos.ScheduleByDate;
 import com.example.demo.models.Schedule;
 import com.example.demo.models.User;
 import com.example.demo.repositories.AnimalRepository;
@@ -43,7 +47,7 @@ public class ScheduleController {
     public ResponseEntity getSchedulesByUser(@AuthenticationPrincipal User userLogged) {
         var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "id inválido"));
         }
 
 
@@ -69,20 +73,20 @@ public class ScheduleController {
 
         var user = userRepository.findById(userLogged.getId());
         if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ErrorData("user", "id inválido"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "id inválido"));
         }
 
         var hour = newSchedule.dateHour().getHour();
 
         var day = newSchedule.dateHour().getDayOfWeek();
         if (hour < 9 || hour > 18 || day == SUNDAY)
-            return ResponseEntity.badRequest().body(new ErrorData("schedule", "Data ou Horário inválidos!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("schedule", "Data ou Horário inválidos!"));
 
         if (newSchedule.dateHour().getMinute() > 0 || newSchedule.dateHour().getSecond() > 0)
-            return ResponseEntity.badRequest().body(new ErrorData("schedule", "Data ou Horário inválidos!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("schedule", "Data ou Horário inválidos!"));
 
         if (scheduleRepository.existsByDateHour(newSchedule.dateHour()))
-            return ResponseEntity.badRequest().body(new ErrorData("schedule", "Já existe agendamento nessa data e horário informado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("schedule", "Já existe agendamento nessa data e horário informado!"));
 
         var animal = animalRepository.getReferenceById(newSchedule.idAnimal());
         var service = serviceRepository.getReferenceById(newSchedule.idService());
