@@ -36,13 +36,13 @@ public class UserController {
 
     @GetMapping("/getUser")
     public ResponseEntity getUser(@AuthenticationPrincipal User userLogged) {
-        var user = userRepository.findById(userLogged.getId());
 
-        if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "Usuário não encontrado!"));
+        if (userLogged.getId() == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        var outputUser = new ResponseClient(user.get());
+        var user = userRepository.findById(userLogged.getId()).get();
+        var outputUser = new ResponseClient(user);
         return ResponseEntity.ok().body(outputUser);
     }
 
@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity createClient(@RequestBody @Valid CreateUser newUser) {
 
         if (userRepository.existsByEmail(newUser.email())) {
-            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail já cadastrado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail ja cadastrado"));
         }
 
 
@@ -79,7 +79,7 @@ public class UserController {
 
 
         if (userRepository.existsByEmail(newUser.email())) {
-            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail já cadastrado!"));
+            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "E-mail ja cadastrado"));
         }
 
 

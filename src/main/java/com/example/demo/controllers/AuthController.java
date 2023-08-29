@@ -1,5 +1,4 @@
 package com.example.demo.controllers;
-
 import com.example.demo.dtos.*;
 import com.example.demo.enums.Profile;
 import com.example.demo.models.User;

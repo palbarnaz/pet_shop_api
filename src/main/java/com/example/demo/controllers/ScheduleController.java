@@ -45,14 +45,12 @@ public class ScheduleController {
 
     @GetMapping("/schedulesByUser")
     public ResponseEntity getSchedulesByUser(@AuthenticationPrincipal User userLogged) {
-        var user = userRepository.findById(userLogged.getId());
-        if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "id inválido"));
+
+        if (userLogged.getId() == null) {
+            return ResponseEntity.notFound().build();
         }
 
-
         var schedules = scheduleRepository.findByUserId(userLogged.getId());
-
 
         return ResponseEntity.ok().body(schedules.stream().map(s -> new ListSchedules(s.getId(), s.getDateHour(), new ListSchedulesUser(s.getUser()), s.getAnimal(), s.getService())).toList());
 
@@ -63,22 +61,22 @@ public class ScheduleController {
         var schedules = scheduleRepository.findByDate(date.toLocalDate().toString());
 
         return ResponseEntity.ok().body(schedules.stream().map(s -> new ScheduleByDate(s.getDateHour())));
-
     }
-
 
     @PostMapping
     @Transactional
     public ResponseEntity createSchedule(@AuthenticationPrincipal User userLogged, @Valid @RequestBody CreateSchedule newSchedule) {
 
-        var user = userRepository.findById(userLogged.getId());
-        if (user.isEmpty()) {
-            return ResponseEntity.badRequest().body(new HandleException.ErrorData("user", "id inválido"));
+        if (userLogged.getId() == null) {
+            return ResponseEntity.notFound().build();
         }
 
-        var hour = newSchedule.dateHour().getHour();
+        var user = userRepository.findById(userLogged.getId());
 
+
+        var hour = newSchedule.dateHour().getHour();
         var day = newSchedule.dateHour().getDayOfWeek();
+
         if (hour < 9 || hour > 18 || day == SUNDAY)
             return ResponseEntity.badRequest().body(new HandleException.ErrorData("schedule", "Data ou Horário inválidos!"));
 

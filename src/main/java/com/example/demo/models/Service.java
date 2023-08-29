@@ -35,6 +35,13 @@ public class Service {
         this.idAdmin = idAdmin;
     }
 
+    public Service(String description, int duration, double price, UUID idAdmin) {
+        this.description = description;
+        this.duration = duration;
+        this.price = price;
+        this.idAdmin = idAdmin;
+    }
+
     public void update(EditService s, UUID idAdmin) {
         description = s.description();
         duration = s.duration();
